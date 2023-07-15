@@ -24,13 +24,46 @@
 
 std::vector<std::string> getGraphicsCardInfo()
 {
-    // Same as previous
+    std::vector<std::string> vGraphicsCards;
+    IDXGIFactory* pFactory;
+    HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&pFactory);
+
+    if (FAILED(hr))
+    {
+        return vGraphicsCards;
+    }
+
+    for (UINT i = 0; ; ++i)
+    {
+        IDXGIAdapter* pAdapter;
+        if (pFactory->EnumAdapters(i, &pAdapter) == DXGI_ERROR_NOT_FOUND)
+        {
+            break; // No more adapters to enumerate
+        }
+
+        // Here we get the device description only
+        DXGI_ADAPTER_DESC AdapterDesc;
+        pAdapter->GetDesc(&AdapterDesc);
+        std::wstring sCardName(AdapterDesc.Description);
+        vGraphicsCards.push_back(std::string(sCardName.begin(), sCardName.end()));
+    }
+
+    if (pFactory)
+    {
+        pFactory->Release();
+    }
+
+    return vGraphicsCards;
 }
 
 DWORDLONG getTotalSystemMemory()
 {
-    // Same as previous
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    GlobalMemoryStatusEx(&statex);
+    return statex.ullTotalPhys / (1024 * 1024);
 }
+
 
 std::string getMACaddress()
 {
