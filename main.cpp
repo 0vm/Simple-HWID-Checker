@@ -45,7 +45,15 @@ std::vector<std::string> getGraphicsCardInfo()
         DXGI_ADAPTER_DESC AdapterDesc;
         pAdapter->GetDesc(&AdapterDesc);
         std::wstring sCardName(AdapterDesc.Description);
-        vGraphicsCards.push_back(std::string(sCardName.begin(), sCardName.end()));
+
+        auto strCardString = std::string { };
+
+        for(const auto& wc : sCardName)
+        {
+          strCardString.push_back(static_cast<char>(wc));
+        }
+
+        vGraphicsCards.push_back(strCardString);
     }
 
     if (pFactory)
@@ -288,11 +296,11 @@ int main()
     //Third part gets the CPU Hash
     int cpuinfo[4] = { 0, 0, 0, 0 }; //EAX, EBX, ECX, EDX
     __cpuid(cpuinfo, 0);
-    char16_t hash = 0;
+    char32_t hash = 0;
     char16_t* ptr = (char16_t*)(&cpuinfo[0]);
     for (char32_t i = 0; i < 8; i++)
         hash += ptr[i];
-    std::cout << "CPU Hash: " << hash << std::endl;
+    std::cout << "CPU Hash: " << static_cast<std::uint32_t>(hash) << std::endl;
 
     //Fourth part gets the GPU information
     std::vector<std::string> graphicsCards = getGraphicsCardInfo();
