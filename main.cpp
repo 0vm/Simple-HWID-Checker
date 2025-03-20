@@ -22,6 +22,16 @@
 #include <Wbemidl.h>
 #pragma comment(lib, "wbemuuid.lib")
 
+std::string wstringToString(const std::wstring& wstr) // wstring to string conversion
+{
+    if (wstr.empty()) return "";
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+    std::string str(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &str[0], size_needed, NULL, NULL);
+    return str;
+}
+
+
 std::vector<std::string> getGraphicsCardInfo()
 {
     std::vector<std::string> vGraphicsCards;
@@ -46,14 +56,10 @@ std::vector<std::string> getGraphicsCardInfo()
         pAdapter->GetDesc(&AdapterDesc);
         std::wstring sCardName(AdapterDesc.Description);
 
-        auto strCardString = std::string { };
-
-        for(const auto& wc : sCardName)
-        {
-          strCardString.push_back(static_cast<char>(wc));
-        }
+        std::string strCardString = wstringToString(sCardName); // Convert to string updated.
 
         vGraphicsCards.push_back(strCardString);
+        pAdapter->Release();
     }
 
     if (pFactory)
